@@ -1,0 +1,157 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>Phaser - Making your first game, part 1</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+/* Crea una instancia del objeto Phaser.Game y lo asigna a una variable
+Parámetros:     
+(1) ancho 
+(2) alto
+(3) contexto de renderizado (recomendado AUTO)
+(4) id del elemento DOM en el que se insertará el canvas. Al dejarlo vacío quedará integrado en el body
+(5) Objeto que contiene referencias a las funciones principales de Phaser */
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var platforms;
+var stars;
+var player;   
+var cursors;
+var score;
+var scoreText;
+
+function preload() {
+    // Carga los recursos necesarios
+    game.load.image('sky', 'assets/sky.png');
+    game.load.image('ground', 'assets/platform.png');
+    game.load.image('star', 'assets/star.png');
+    game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+}
+
+function create() {    
+    // Inicializa el sistema de física
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    
+    // Fondo del juego
+    game.add.sprite(0, 0, 'sky');
+    
+    // El grupo contiene el suelo y dos plataformas sobre los que podemos saltar
+    platforms = game.add.group();
+    
+    // Activa la física del grupo
+    platforms.enableBody = true;
+    
+    // Crea el suelo y lo reescala para cubrir el ancho del juego
+    var ground = platforms.create(0, game.world.height - 64, 'ground');
+    ground.scale.setTo(2, 2);
+    
+    // Evita que pueda ser traspasado
+    ground.body.immovable = true;
+    
+    // Crea las dos plataformas y previene que pueda caerse a través de ellas
+    var ledge = platforms.create(400, 400, 'ground');
+    ledge.body.immovable = true;
+    ledge = platforms.create(-150, 250, 'ground');
+    ledge.body.immovable = true;    
+    
+    // Crea al jugardor
+    player = game.add.sprite(32, game.world.height - 150, 'dude');
+    
+    // Activa la física del jugador y establece algunas de sus propiedades
+    game.physics.arcade.enable(player);
+    player.body.bounce.y = 0.2;
+    player.body.gravity.y = 300;
+    player.body.collideWorldBounds = true;
+    
+    // Animaciones: caminar a izquierda y derecha
+    player.animations.add('left', [0, 1, 2, 3], 10, true);
+    player.animations.add('right', [5, 6, 7, 8], 10, true);
+    
+    // Controles
+    cursors = game.input.keyboard.createCursorKeys();
+    
+    // Crea las estrellas
+    stars = game.add.group();
+    stars.enableBody = true;
+    
+    for (var i = 0; i < 12; i++)
+    {
+        // Crea una estrella dentro del grupo
+        var star = stars.create(i * 70, 0, 'star');
+
+        // Aplica gravedad
+        star.body.gravity.y = 6;
+
+        //  Aplica un valor de rebote
+        star.body.bounce.y = 0.7 + Math.random() * 0.2;
+    }
+    
+    // Crea e inicializa el marcador
+    score = 0;
+    scoreText = game.add.text(16, 16, 'Puntuación: ' + score, { fontSize: '32px', fill: '#fff' });
+}
+
+    
+function update() {
+    // Comprueba si hay colisión y evita que el jugador y las estrellas atraviese las plataformas
+    game.physics.arcade.collide(player, platforms);
+    game.physics.arcade.collide(stars, platforms);
+    
+    // Comprueba si el jugador y la estrella se solapan, si es así llama a collectStar
+    game.physics.arcade.overlap(player, stars, collectStar, null, this);
+    
+    // Resetea la velocidad del jugador
+    player.body.velocity.x = 0;
+
+    if (cursors.left.isDown)
+    {
+        // Izquierda
+        player.body.velocity.x = -150;
+
+        player.animations.play('left');
+    }
+    else if (cursors.right.isDown)
+    {
+        //  Derecha
+        player.body.velocity.x = 150;
+
+        player.animations.play('right');
+    }
+    else
+    {
+        //  Permanece inmóvil
+        player.animations.stop();
+
+        player.frame = 4;
+    }
+    
+    //  Salta si está sobre una superficie que lo permite
+    if (cursors.up.isDown && player.body.touching.down)
+    {
+        player.body.velocity.y = -350;
+    }
+}
+    
+function collectStar (player, star) {
+    // Elimina la estrella del juego
+    star.kill();
+    
+    // Actualiza el marcador
+    score += 10;
+    scoreText.text = 'Puntuacion: ' + score;
+}
+
+</script>
+
+</body>
+</html>
