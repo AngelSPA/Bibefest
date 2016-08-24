@@ -168,6 +168,22 @@ function collectStar (player, star) {
 function createNewLevel() {
     level++;
     levelText.text = 'Nivel:  ' + level;
+    
+    // Crea más estrellas
+    for (var i = 0; i < 12; i++)
+    {
+        // Crea una estrella dentro del grupo
+        var star = stars.create(Math.round(Math.random() * (game.world.width - 0.5) + parseInt(0.5)), 0, 'star');
+
+        // Aplica gravedad
+        star.body.gravity.y = Math.round(Math.random() * (100 - 10) + parseInt(10));
+
+        //  Aplica un valor de rebote
+        star.body.bounce.y = 0.7 + Math.random() * 0.2;
+        
+        // Incrementa el contador de estrellas
+        starsCounter = i + 1;
+    }
 }
 
 
