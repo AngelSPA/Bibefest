@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
 	<meta charset="UTF-8" />
-	<title>Phaser - Making your first game, part 1</title>
+	<title>Bibefest</title>
 	<script type="text/javascript" src="js/phaser.min.js"></script>
     <style type="text/css">
         body {
@@ -29,6 +29,9 @@ var player;
 var cursors;
 var score;
 var scoreText;
+var level;
+var levelText;
+var starsCounter;
 
 function preload() {
     // Carga los recursos necesarios
@@ -94,11 +97,16 @@ function create() {
 
         //  Aplica un valor de rebote
         star.body.bounce.y = 0.7 + Math.random() * 0.2;
+        
+        // Incrementa el contador de estrellas
+        starsCounter = i + 1;
     }
     
-    // Crea e inicializa el marcador
+    // Crea e inicializa el marcador y el nivel
     score = 0;
-    scoreText = game.add.text(16, 16, 'Puntuación: ' + score, { fontSize: '32px', fill: '#fff' });
+    level = 1;
+    scoreText = game.add.text(16, 16, 'Bibes: ' + score, { fontSize: '32px', fill: '#fff' });
+    levelText = game.add.text(game.width - 116, 16, 'Nivel: ' + level, { fontSize: '32px', fill: '#fff' });
 }
 
     
@@ -143,12 +151,23 @@ function update() {
 }
     
 function collectStar (player, star) {
-    // Elimina la estrella del juego
+    // Elimina la estrella del juego y decrementa el contador
     star.kill();
+    starsCounter--;
     
     // Actualiza el marcador
-    score += 10;
-    scoreText.text = 'Puntuacion: ' + score;
+    score++;
+    scoreText.text = 'Bibes: ' + score;
+    
+    if(starsCounter == 0) {
+        newLevel;  
+    }
+}
+    
+function newLevel (player, star) {
+    Alert('Chucu');
+    level++;
+    scoreLevel.text = 'Nivel: ' + level;
 }
 
 </script>
