@@ -97,7 +97,7 @@ function create() {
     livesText = game.add.text(16, 64, 'Vidas: ' + lives, { fontSize: '32px', fill: '#fff' });
 
     // Ajusta el juego a la pantalla del dispositivo
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
+    game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT; // EXACT_FIT; SHOW_ALL
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
     
