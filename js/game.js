@@ -8,10 +8,11 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 // Variables globales
+var background;
 var platforms;
-var stars;
+var pacifiers;
+var nappy;
 var player; 
-var enemies;    
 var cursors;
 var score;
 var scoreText;
@@ -19,24 +20,27 @@ var level;
 var levelText;
 var lives;
 var livesText;
-var starsCounter;
+var pacifiersCounter;
+var bombTimer;
+var nappyInterval;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
     game.load.image('sky', 'assets/sky.png');
     game.load.image('ground', 'assets/platform.png');
-    game.load.image('star', 'assets/star.png');
+    game.load.image('pacifier', 'assets/pacifier.png');
+    game.load.image('nappy', 'assets/nappy.png', 28, 28);
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
     game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
 }
 
 // Crea los elementos del juego una vez finalizada la carga
-function create() {    
+function create() {      
     // Inicializa el sistema de física
     game.physics.startSystem(Phaser.Physics.ARCADE);
     
     // Fondo del juego
-    game.add.sprite(0, 0, 'sky');
+    background = game.add.sprite(0, 0, 'sky');
     
     // Crea un grupo para el suelo y las dos plataformas, ya que su comportamiento es el mismo
     platforms = game.add.group();
@@ -74,84 +78,70 @@ function create() {
     cursors = game.input.keyboard.createCursorKeys();
     
     // Crea las estrellas
-    stars = game.add.group();
-    stars.enableBody = true;
+    pacifiers = game.add.group();
+    pacifiers.enableBody = true;
     
     for (var i = 0; i < 12; i++)
     {
         // Crea una estrella dentro del grupo y establece sus propiedades
-        var star = stars.create(i * 70, 0, 'star');
-        star.body.gravity.y = 6;
-        star.body.bounce.y = 0.7 + Math.random() * 0.2;
+        var pacifier = pacifiers.create(i * 70, 0, 'pacifier');
+        pacifier.body.gravity.y = 6;
+        pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
         
         // Incrementa el contador de estrellas
-        starsCounter = i + 1;
+        pacifiersCounter = i + 1;
     }
     
     // Crea e inicializa el marcador, el nivel y las vidas
     score = 0;
     level = 1;
     lives = 3;
-    levelText = game.add.text(16, 16, 'Nivel:  ' + level, { fontSize: '32px', fill: '#fff' });
-    scoreText = game.add.text(16, 40, 'Bibes: ' + score, { fontSize: '32px', fill: '#fff' });
-    livesText = game.add.text(16, 64, 'Vidas: ' + lives, { fontSize: '32px', fill: '#fff' });
-
+    levelText = game.add.text(16, 16, 'Nivel: ' + level, { fontSize: '32px', fill: '#fff' });
+    scoreText = game.add.text(game.world.centerX, 16, 'Chupetes: ' + score, { fontSize: '32px', fill: '#fff' });
+    livesText = game.add.text(game.world.width - 15, 16, 'Vidas: ' + lives, { fontSize: '32px', fill: '#fff' });
+    scoreText.anchor.set(0.5, 0);
+    livesText.anchor.set(1, 0);
+    
     // Ajusta el juego a la pantalla del dispositivo
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
-    
-    /*
-    // Crea el primer enemigo y lo asigna al grupo
-    enemies = game.add.group();
-    enemies.enableBody = true;
-    
-    var enemy = enemies.create(0, game.world.height - 100, 'baddie');  
-    
-    // Aplica gravedad
-    enemy.body.gravity.y = 100;
-    enemy.body.collideWorldBounds = true;
-    
-    // Animaciones: caminar a izquierda y derecha
-    enemy.animations.add('left', [0, 1], 10, true);
-    enemy.animations.add('right', [3, 4], 10, true);
-    
-    //game.physics.arcade.enable(enemy);
-    */
+        
+    // Crea el timer que controla las bombas y le asigna un intervalo inicial de 10 segundos
+    nappyInterval = 10000;
+    bombTimer = game.time.create(false);  
+    bombTimer.loop(nappyInterval, dropBomb, game); 
 }
 
-    
+// Actualiza el estado del juego  
 function update() {
-    // Comprueba si hay colisión y evita que el jugador, las estrellas y los enemigos atraviese las plataformas
+    // Comprueba si hay colisión y evita que el jugador, las estrellas y los enemigos atraviesen las plataformas
     game.physics.arcade.collide(player, platforms);
-    game.physics.arcade.collide(stars, platforms);
-    game.physics.arcade.collide(enemies, platforms);
+    game.physics.arcade.collide(pacifiers, platforms);
+    game.physics.arcade.collide(nappy, platforms);
     
-    // Comprueba si el jugador y la estrella se solapan, si es así llama a collectStar
-    game.physics.arcade.overlap(player, stars, collectStar, null, this);
+    // Comprueba si el jugador y una estrella se solapan, si es así llama a collectPacifier
+    game.physics.arcade.overlap(player, pacifiers, collectPacifier, null, this);
+    
+    // Comprueba si el jugador y una bomba se solapan
+    game.physics.arcade.overlap(player, nappy, touchBomb, null, this);
     
     // Resetea la velocidad del jugador
     player.body.velocity.x = 0;
 
-    if (cursors.left.isDown)
+    if (cursors.left.isDown) // Izquierda    
     {
-        // Izquierda
         player.body.velocity.x = -150;
-
         player.animations.play('left');
     }
-    else if (cursors.right.isDown)
+    else if (cursors.right.isDown) //  Derecha
     {
-        //  Derecha
         player.body.velocity.x = 150;
-
         player.animations.play('right');
     }
-    else
+    else //  Permanece inmóvil
     {
-        //  Permanece inmóvil
         player.animations.stop();
-
         player.frame = 4;
     }
     
@@ -159,52 +149,77 @@ function update() {
     if (cursors.up.isDown && player.body.touching.down)
     {
         player.body.velocity.y = -350;
-    }
+    }   
     
-    /*// Movimiento de los enemigos
-
-        enemies.body.velocity.x = 150;
-
-        enemies.animations.play('right');
-    */
+    // A partir del tercer nivel deja caer bombas desde la parte superior
+    if (level >= 3) {
+        // bombTimer.start();  
+    }
 }
    
-    
-function collectStar (player, star) {
+// Elimina la estrella tras la colisión y actualiza la información  
+function collectPacifier(player, pacifier) {
     // Elimina la estrella del juego y decrementa el contador
-    star.kill();
-    starsCounter--;
+    pacifier.kill();
+    pacifiersCounter--;
     
     // Actualiza el marcador
     score++;
-    scoreText.text = 'Bibes: ' + score;
+    scoreText.text = 'Chupetes: ' + score;
     
-    if(starsCounter == 0) {
+    // Si no queda ninguna estrella se genera un nuevo nivel
+    if(pacifiersCounter == 0) {
         createNewLevel();  
     }
 }
 
+// Genera nuevas estrellas y actualiza la información
 function createNewLevel() {
     level++;
-    levelText.text = 'Nivel:  ' + level;
+    levelText.text = 'Nivel: ' + level;
     
     // Crea más estrellas
     for (var i = 0; i < 12; i++)
     {
-        // Crea una estrella dentro del grupo
-        var star = stars.create(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'star');
-
-        // Aplica gravedad
-        star.body.gravity.y = Math.round(Math.random() * (100 - 10) + parseInt(10));
-
-        //  Aplica un valor de rebote
-        star.body.bounce.y = 0.7 + Math.random() * 0.2;
+        var pacifier = pacifiers.create(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'pacifier');
+        pacifier.body.gravity.y = Math.round(Math.random() * (100 - 10) + parseInt(10));
+        pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
         
         // Incrementa el contador de estrellas
-        starsCounter = i + 1;
+        pacifiersCounter = i + 1;
     }
+}
+
+// Genera nuevas estrellas y actualiza la información
+function dropBomb() {
+    nappy = game.add.sprite(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'nappy');
+    game.physics.arcade.enable(nappy);
+    nappy.enableBody = true;
+    nappy.body.gravity.y = Math.round(Math.random() * (500 - 100) + parseInt(100));
+}
+
+// El jugador ha tocado una bomba 
+function touchBomb() {
     
-    if (level == 3) {
-       
-    }        
+    
+    // player.destroy();
+    
+    
+    // Elimina la bomba
+    nappy.kill();
+    
+    // Resta una vida y comprueba si el juego puede continuar
+    lives--;
+    
+    if (lives > 0) {
+        livesText.text = 'Vidas: ' + lives;
+    }
+    else {
+        gameOver();
+    }
+}
+
+// Fin del juego
+function gameOver() {
+    alert("Game Over");
 }
