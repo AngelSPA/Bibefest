@@ -23,6 +23,7 @@ var livesText;
 var pacifiersCounter;
 var bombTimer;
 var nappyInterval;
+var messageText;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
@@ -83,7 +84,6 @@ function create() {
     
     for (var i = 0; i < 12; i++)
     {
-        // Crea una estrella dentro del grupo y establece sus propiedades
         var pacifier = pacifiers.create(i * 70, 0, 'pacifier');
         pacifier.body.gravity.y = 6;
         pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
@@ -152,8 +152,8 @@ function update() {
     }   
     
     // A partir del tercer nivel deja caer bombas desde la parte superior
-    if (level >= 3) {
-        // bombTimer.start();  
+    if (level >= 0) {
+        bombTimer.start();  
     }
 }
    
@@ -190,7 +190,7 @@ function createNewLevel() {
     }
 }
 
-// Genera nuevas estrellas y actualiza la información
+// Deja caer una bomba
 function dropBomb() {
     nappy = game.add.sprite(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'nappy');
     game.physics.arcade.enable(nappy);
@@ -200,26 +200,25 @@ function dropBomb() {
 
 // El jugador ha tocado una bomba 
 function touchBomb() {
-    
-    
-    // player.destroy();
-    
+    // Inicializa la posición del jugador
+    player.reset(32, game.world.height - 150);
     
     // Elimina la bomba
     nappy.kill();
     
     // Resta una vida y comprueba si el juego puede continuar
     lives--;
+    livesText.text = 'Vidas: ' + lives;
     
-    if (lives > 0) {
-        livesText.text = 'Vidas: ' + lives;
-    }
-    else {
+    if (lives <= 0) {
         gameOver();
     }
 }
 
 // Fin del juego
 function gameOver() {
-    alert("Game Over");
+    bombTimer.stop();
+    player.destroy();
+    messageText = game.add.text(game.world.centerX, game.world.centerY, 'Fin del juego', { fontSize: '32px', fill: '#fff' });
+    messageText.anchor.set(0.5, 0);
 }
