@@ -152,7 +152,7 @@ function update() {
     }   
     
     // A partir del tercer nivel deja caer bombas desde la parte superior
-    if (level >= 0) {
+    if (level >= 3) {
         bombTimer.start();  
     }
 }
