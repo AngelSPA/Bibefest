@@ -24,6 +24,7 @@ var pacifiersCounter;
 var bombTimer;
 var nappyInterval;
 var messageText;
+var emitter;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
@@ -33,6 +34,7 @@ function preload() {
     game.load.image('nappy', 'assets/nappy.png', 28, 28);
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
     game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
+    game.load.spritesheet('explosion', 'assets/explosion.png', 24, 24);
 }
 
 // Crea los elementos del juego una vez finalizada la carga
@@ -192,6 +194,21 @@ function createNewLevel() {
 
 // Deja caer una bomba
 function dropBomb() {
+    // Si existe una bomba anterior la elimina
+    if(nappy) {
+        nappy.kill();
+        
+        // Explosión de la bomba 
+        emitter = game.add.emitter(0, 0, 100);
+        emitter.makeParticles('nappy');
+        emitter.gravity = 200;  
+        emitter.x = nappy.x;
+        emitter.y = nappy.y;
+        emitter.start(true, 4000, null, 10);
+        game.time.events.add(2000, destroyEmitter, this);
+    }
+     
+    // Genera una nueva bomba
     nappy = game.add.sprite(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'nappy');
     game.physics.arcade.enable(nappy);
     nappy.enableBody = true;
@@ -200,6 +217,15 @@ function dropBomb() {
 
 // El jugador ha tocado una bomba 
 function touchBomb() {
+    // Explosión del jugador
+    emitter = game.add.emitter(0, 0, 100);
+    emitter.makeParticles('explosion');
+    emitter.gravity = 200;  
+    emitter.x = player.x;
+    emitter.y = player.y;
+    emitter.start(true, 4000, null, 10);
+    game.time.events.add(2000, destroyEmitter, this);
+    
     // Inicializa la posición del jugador
     player.reset(32, game.world.height - 150);
     
@@ -215,6 +241,12 @@ function touchBomb() {
     }
 }
 
+// Destruye el emisor de partículas durante la explosión
+function destroyEmitter() {
+    emitter.destroy();
+
+}
+
 // Fin del juego
 function gameOver() {
     bombTimer.stop();
@@ -222,3 +254,6 @@ function gameOver() {
     messageText = game.add.text(game.world.centerX, game.world.centerY, 'Fin del juego', { fontSize: '32px', fill: '#fff' });
     messageText.anchor.set(0.5, 0);
 }
+
+
+
