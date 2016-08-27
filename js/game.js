@@ -38,7 +38,7 @@ function preload() {
 }
 
 // Crea los elementos del juego una vez finalizada la carga
-function create() {      
+function create() {     
     // Inicializa el sistema de física
     game.physics.startSystem(Phaser.Physics.ARCADE);
     
@@ -50,7 +50,7 @@ function create() {
     
     // Activa la física del grupo
     platforms.enableBody = true;
-    
+        
     // Crea el suelo y lo reescala para cubrir el ancho del juego
     var ground = platforms.create(0, game.world.height - 64, 'ground');
     ground.scale.setTo(2, 2);
@@ -62,8 +62,8 @@ function create() {
     var ledge = platforms.create(400, 400, 'ground');
     ledge.body.immovable = true;
     ledge = platforms.create(-150, 250, 'ground');
-    ledge.body.immovable = true;    
-    
+    ledge.body.immovable = true;  
+         
     // Crea al jugardor
     player = game.add.sprite(32, game.world.height - 150, 'dude');
     
@@ -113,6 +113,9 @@ function create() {
     nappyInterval = 10000;
     bombTimer = game.time.create(false);  
     bombTimer.loop(nappyInterval, dropBomb, game); 
+    
+     // Muestra el texto introductorio
+    showMessage('Ayuda a Pokitrón a conseguir chupetes.\n\nControles:  ←  ↑  → \n\nToca para cerrar.');    
 }
 
 // Actualiza el estado del juego  
@@ -196,8 +199,6 @@ function createNewLevel() {
 function dropBomb() {
     // Si existe una bomba anterior la elimina
     if(nappy) {
-        nappy.kill();
-        
         // Explosión de la bomba 
         emitter = game.add.emitter(0, 0, 100);
         emitter.makeParticles('nappy');
@@ -206,6 +207,8 @@ function dropBomb() {
         emitter.y = nappy.y;
         emitter.start(true, 4000, null, 10);
         game.time.events.add(2000, destroyEmitter, this);
+        
+        nappy.kill();
     }
      
     // Genera una nueva bomba
@@ -244,16 +247,41 @@ function touchBomb() {
 // Destruye el emisor de partículas durante la explosión
 function destroyEmitter() {
     emitter.destroy();
-
 }
 
 // Fin del juego
 function gameOver() {
     bombTimer.stop();
     player.destroy();
-    messageText = game.add.text(game.world.centerX, game.world.centerY, 'Fin del juego', { fontSize: '32px', fill: '#fff' });
-    messageText.anchor.set(0.5, 0);
+    showMessage('Fin del juego')
 }
 
+// Pausa el juego y muestra el mensaje en pantalla
+function showMessage(message) {
+    // Detiene el juego
+    game.paused = true;
+    
+    // Oculta el jugador
+    player.visible = false;
+    
+    // Muestra el mensaje en pantalla
+    messageText = game.add.text(game.world.centerX, game.world.centerY, message, { font: '32px Arial', fill: '#fff', align: 'center', backgroundColor: '#000'});
+    messageText.anchor.setTo(0.5, 0.5);
+    messageText.backgroundColor = "#000";
+
+    game.input.onDown.addOnce(removeText, this);
+}
+
+// Elimina el mensaje y activa el juego
+function removeText() {
+    // Elimina el mensaje
+    messageText.destroy();
+   
+    // Vuelve a mostrar el jugador
+    player.visible = true;
+    
+    // Activa el juego
+    game.paused = false;
+}
 
 
