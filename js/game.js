@@ -134,11 +134,12 @@ function create() {
      
         
 
-        /*if (!game.device.desktop)
+        if (!game.device.desktop)
         {
+            alert('Móvil');
             game.scale.forcePortrait = true;
         
-        }*/
+        }
     
     
         
