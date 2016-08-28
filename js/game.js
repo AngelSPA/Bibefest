@@ -98,9 +98,13 @@ function create() {
     score = 0;
     level = 1;
     lives = 3;
-    levelText = game.add.text(16, 16, 'Nivel: ' + level, { fontSize: '32px', fill: '#fff' });
-    scoreText = game.add.text(game.world.centerX, 16, 'Chupetes: ' + score, { fontSize: '32px', fill: '#fff' });
-    livesText = game.add.text(game.world.width - 15, 16, 'Vidas: ' + lives, { fontSize: '32px', fill: '#fff' });
+    levelText = game.add.text(16, 16, 'Nivel: ' + level, { font: '32px Marker Felt', fill: '#fff' });
+    levelText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
+    scoreText = game.add.text(game.world.centerX, 16, 'Chupetes: ' + score, { font: '32px Marker Felt', fill: '#fff' });
+    scoreText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
+    livesText = game.add.text(game.world.width - 15, 16, 'Vidas: ' + lives, { font: '32px Marker Felt', fill: '#fff' });
+    livesText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
+    
     scoreText.anchor.set(0.5, 0);
     livesText.anchor.set(1, 0);
     
@@ -157,8 +161,9 @@ function update() {
     }   
     
     // A partir del tercer nivel deja caer bombas desde la parte superior
-    if (level >= 3) {
-        bombTimer.start();  
+    if (level >= 0) {
+        bombTimer.start(); 
+        // showMessage('¡Evita los peligrosos pañales!');
     }
 }
    
@@ -199,15 +204,6 @@ function createNewLevel() {
 function dropBomb() {
     // Si existe una bomba anterior la elimina
     if(nappy) {
-        // Explosión de la bomba 
-        emitter = game.add.emitter(0, 0, 100);
-        emitter.makeParticles('nappy');
-        emitter.gravity = 200;  
-        emitter.x = nappy.x;
-        emitter.y = nappy.y;
-        emitter.start(true, 4000, null, 10);
-        game.time.events.add(2000, destroyEmitter, this);
-        
         nappy.kill();
     }
      
@@ -220,6 +216,9 @@ function dropBomb() {
 
 // El jugador ha tocado una bomba 
 function touchBomb() {
+    // Elimina la bomba
+    nappy.kill();
+    
     // Explosión del jugador
     emitter = game.add.emitter(0, 0, 100);
     emitter.makeParticles('explosion');
@@ -231,9 +230,6 @@ function touchBomb() {
     
     // Inicializa la posición del jugador
     player.reset(32, game.world.height - 150);
-    
-    // Elimina la bomba
-    nappy.kill();
     
     // Resta una vida y comprueba si el juego puede continuar
     lives--;
@@ -265,10 +261,11 @@ function showMessage(message) {
     player.visible = false;
     
     // Muestra el mensaje en pantalla
-    messageText = game.add.text(game.world.centerX, game.world.centerY, message, { font: '32px Arial', fill: '#fff', align: 'center', backgroundColor: '#000'});
+    messageText = game.add.text(game.world.centerX, game.world.centerY, message, { font: '32px Marker Felt', fill: '#fff', align: 'center', backgroundColor: '#000000'});
     messageText.anchor.setTo(0.5, 0.5);
-    messageText.backgroundColor = "#000";
+    messageText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
 
+    // Espera a que se haga clic sobre el mensaje para cerrarlo
     game.input.onDown.addOnce(removeText, this);
 }
 
