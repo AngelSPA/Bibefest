@@ -1,11 +1,17 @@
-/* Crea el objeto Phaser.Game:     
+/* Crea el objeto Phaser.Game: // ORIGINAL var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });    
 (1) Ancho 
 (2) Alto
 (3) Contexto de renderizado (recomendado AUTO, Phaser selecciona el adecuado)
 (4) Identificador del elemento DOM en el que se insertará el juego (por defecto es el body)
 (5) Objeto que contiene referencias a las funciones principales de Phaser */
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+// Obtiene la proporción de la pantalla 
+var gameRatio = window.innerWidth / window.innerHeight;
+var worldWidth = Math.ceil(640 * gameRatio);
+var worldHeight = 640;
+
+// Crea el objeto teniendo en cuenta la proporción
+var game = new Phaser.Game(worldWidth, worldHeight, Phaser.AUTO, '', {preload: preload, create: create, update: update});
 
 // Variables globales
 var background;
@@ -45,6 +51,7 @@ function create() {
     
     // Fondo del juego
     background = game.add.sprite(0, 0, 'sky');
+    background.width = worldWidth;
     
     // Crea un grupo para el suelo y las dos plataformas, ya que su comportamiento es el mismo
     platforms = game.add.group();
@@ -54,13 +61,21 @@ function create() {
         
     // Crea el suelo y lo reescala para cubrir el ancho del juego
     var ground = platforms.create(0, game.world.height - 64, 'ground');
-    ground.scale.setTo(2, 2);
+    ground.width = worldWidth;
+    ground.height *= 2; 
+    //ground.scale.set(1, 2);
     
     // Evita que pueda ser traspasado
     ground.body.immovable = true;
     
     // Crea las dos plataformas y evita que pueda caerse a través de ellas
     var ledge = platforms.create(400, 400, 'ground');
+    
+    /*
+    // Redimensiona la plataforma inferior para que llegue hasta el extremo derecho
+    // ledge.width += worldWidth - 400;
+    */
+    
     ledge.body.immovable = true;
     ledge = platforms.create(-150, 250, 'ground');
     ledge.body.immovable = true;  
@@ -119,11 +134,11 @@ function create() {
      
         
 
-        if (!game.device.desktop)
+        /*if (!game.device.desktop)
         {
             game.scale.forcePortrait = true;
         
-        }
+        }*/
     
     
         
@@ -294,5 +309,4 @@ function removeText() {
     // Activa el juego
     game.paused = false;
 }
-
 
