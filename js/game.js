@@ -7,7 +7,7 @@
 
 // Obtiene la proporción de la pantalla 
 var gameRatio = window.innerWidth / window.innerHeight;
-var worldWidth = Math.ceil(640 * gameRatio);
+var worldWidth = 640 * gameRatio; //Math.ceil(640 * gameRatio);
 var worldHeight = 640;
 
 // Crea el objeto teniendo en cuenta la proporción
