@@ -27,12 +27,11 @@ var levelText;
 var lives;
 var livesText;
 var pacifiersCounter;
-var bombTimer;
+var nappyTimer;
 var nappyInterval;
 var messageText;
 var emitter;
 var textAttributes;
-var firstRunLandscape;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
@@ -96,26 +95,12 @@ function create() {
     // Controles
     cursors = game.input.keyboard.createCursorKeys();
     
-    // Crea las estrellas
-    pacifiers = game.add.group();
-    pacifiers.enableBody = true;
-    
-    for (var i = 0; i < 12; i++)
-    {
-        var pacifier = pacifiers.create(i * 70, 0, 'pacifier');
-        pacifier.body.gravity.y = 6;
-        pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
-        
-        // Incrementa el contador de estrellas
-        pacifiersCounter = i + 1;
-    }
-    
     // Establece los atributos del texto
     textAttributes = {font: '32px Marker Felt', fill: '#fff', align: 'center'};
     
     // Crea e inicializa el marcador, el nivel y las vidas
     score = 0;
-    level = 1;
+    level = 0;
     lives = 3;
     levelText = game.add.text(16, 16, 'Nivel: ' + level, textAttributes);
     levelText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
@@ -127,35 +112,37 @@ function create() {
     livesText.anchor.set(1, 0);
     
     // Ajusta el juego a la pantalla del dispositivo
-    firstRunLandscape = game.scale.isGameLandscape;
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
-    // game.scale.pageAlignHorizontally = true;
-    // game.scale.pageAlignVertically = true;
-    game.scale.forceOrientation(false, true);
-    game.scale.enterIncorrectOrientation.add(handleIncorrect);
-    game.scale.leaveIncorrectOrientation.add(handleCorrect);
+    game.scale.pageAlignHorizontally = true;
+    game.scale.pageAlignVertically = true;
     
-    // Crea el timer que controla las bombas y le asigna un intervalo inicial de 10 segundos
+    // Crea el timer que genera los pañales y le asigna un intervalo inicial de 10 segundos
     nappyInterval = 10000;
-    bombTimer = game.time.create(false);  
-    bombTimer.loop(nappyInterval, dropBomb, game); 
+    nappyTimer = game.time.create(false);  
+    nappyTimer.loop(nappyInterval, dropNappy, game); 
     
      // Muestra el texto introductorio
-    showMessage('Ayuda a Pokitrón a conseguir chupetes.\n\nControles:  ←  ↑  → \n\nToca para cerrar.');    
+    showMessage('Ayuda a Pokitrón a conseguir chupetes.\n\nControles:  ←  ↑  → \n\nToca para cerrar.');   
+        
+    // Crea el primer nivel
+    pacifiers = game.add.group();
+    pacifiers.enableBody = true;
+    
+    createNewLevel();
 }
 
 // Actualiza el estado del juego  
 function update() {
-    // Comprueba si hay colisión y evita que el jugador, las estrellas y los enemigos atraviesen las plataformas
+    // Comprueba si hay colisión y evita que el jugador, los chupetes, los pañales y los enemigos atraviesen las plataformas
     game.physics.arcade.collide(player, platforms);
     game.physics.arcade.collide(pacifiers, platforms);
     game.physics.arcade.collide(nappy, platforms);
     
-    // Comprueba si el jugador y una estrella se solapan, si es así llama a collectPacifier
+    // Comprueba si el jugador y un chupete se solapan, si es así llama a collectPacifier
     game.physics.arcade.overlap(player, pacifiers, collectPacifier, null, this);
     
-    // Comprueba si el jugador y una bomba se solapan
-    game.physics.arcade.overlap(player, nappy, touchBomb, null, this);
+    // Comprueba si el jugador y un pañala se solapan
+    game.physics.arcade.overlap(player, nappy, touchNappy, null, this);
     
     // Resetea la velocidad del jugador
     player.body.velocity.x = 0;
@@ -182,16 +169,17 @@ function update() {
         player.body.velocity.y = -350;
     }   
     
-    // A partir del tercer nivel deja caer bombas desde la parte superior
+    // A partir del tercer nivel deja caer pañales desde la parte superior
     if (level >= 3) {
-        bombTimer.start(); 
-        // showMessage('¡Evita los peligrosos pañales!');
+        nappyTimer.start(); 
+        
+        // showMessage('¡Evita los peligrosos pañales!'); <-- Verificar que el timer no está activo
     }
 }
    
-// Elimina la estrella tras la colisión y actualiza la información  
+// Elimina el chupete tras la colisión y actualiza la información  
 function collectPacifier(player, pacifier) {
-    // Elimina la estrella del juego y decrementa el contador
+    // Elimina el chupete del juego y decrementa el contador
     pacifier.kill();
     pacifiersCounter--;
     
@@ -199,46 +187,46 @@ function collectPacifier(player, pacifier) {
     score++;
     scoreText.text = 'Chupetes: ' + score;
     
-    // Si no queda ninguna estrella se genera un nuevo nivel
+    // Si no queda ningún chupete se genera un nuevo nivel
     if(pacifiersCounter == 0) {
         createNewLevel();  
     }
 }
 
-// Genera nuevas estrellas y actualiza la información
+// Genera nuevos chupetes y actualiza la información
 function createNewLevel() {
     level++;
     levelText.text = 'Nivel: ' + level;
     
-    // Crea más estrellas
+    // Crea más chupetes
     for (var i = 0; i < 12; i++)
     {
-        var pacifier = pacifiers.create(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'pacifier');
+        var pacifier = pacifiers.create(Math.round(Math.random() * ((game.world.width - 30) - 0.5) + parseInt(0.5)), 0, 'pacifier');
         pacifier.body.gravity.y = Math.round(Math.random() * (100 - 10) + parseInt(10));
         pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
         
-        // Incrementa el contador de estrellas
+        // Incrementa el contador de chupetes
         pacifiersCounter = i + 1;
     }
 }
 
-// Deja caer una bomba
-function dropBomb() {
-    // Si existe una bomba anterior la elimina
+// Deja caer un pañal
+function dropNappy() {
+    // Si existe un pañal previo lo elimina
     if(nappy) {
         nappy.kill();
     }
      
-    // Genera una nueva bomba
+    // Genera un nuevo pañal
     nappy = game.add.sprite(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'nappy');
     game.physics.arcade.enable(nappy);
     nappy.enableBody = true;
     nappy.body.gravity.y = Math.round(Math.random() * (500 - 100) + parseInt(100));
 }
 
-// El jugador ha tocado una bomba 
-function touchBomb() {
-    // Elimina la bomba
+// El jugador ha colisionado con un pañal 
+function touchNappy() {
+    // Elimina el pañal
     nappy.kill();
     
     // Explosión del jugador
@@ -269,7 +257,7 @@ function destroyEmitter() {
 
 // Fin del juego
 function gameOver() {
-    bombTimer.stop();
+    nappyTimer.stop();
     player.destroy();
     showMessage('Fin del juego')
 }
@@ -302,27 +290,3 @@ function removeText() {
     // Activa el juego
     game.paused = false;
 }
-
-
-
-
-
-function handleIncorrect() {
-     	if(!game.device.desktop) {
-     		document.getElementById("turn").style.display = "block";
-     	}
-	}
-	
-	function handleCorrect() {
-		if(!game.device.desktop) {
-            if(firstRunLandscape) {
-				gameRatio = window.innerWidth / window.innerHeight;		
-				game.width = Math.ceil(640 * gameRatio);
-				game.height = 640;
-				game.renderer.resize(game.width, game.height);
-				game.state.start("Play");		
-			}
-			
-            document.getElementById("turn").style.display="none";
-		}
-	}
