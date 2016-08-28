@@ -121,10 +121,8 @@ function create() {
 
         if (!game.device.desktop)
         {
-            this.scale.forceOrientation(true, false);
-            this.scale.setResizeCallback(this.gameResized, this);
-            this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
-            this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
+            game.scale.forcePortrait = true;
+        
         }
     
     
