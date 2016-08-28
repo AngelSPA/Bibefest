@@ -128,14 +128,12 @@ function create() {
     
     // Ajusta el juego a la pantalla del dispositivo
     firstRunLandscape = game.scale.isGameLandscape;
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
-    game.scale.pageAlignHorizontally = true;
-    game.scale.pageAlignVertically = true;
-    // *********
+    game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT; // EXACT_FIT; SHOW_ALL
+    // game.scale.pageAlignHorizontally = true;
+    // game.scale.pageAlignVertically = true;
     game.scale.forceOrientation(false, true);
     game.scale.enterIncorrectOrientation.add(handleIncorrect);
     game.scale.leaveIncorrectOrientation.add(handleCorrect);
-    // *********
     
     // Crea el timer que controla las bombas y le asigna un intervalo inicial de 10 segundos
     nappyInterval = 10000;
