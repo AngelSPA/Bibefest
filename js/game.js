@@ -32,6 +32,7 @@ var nappyInterval;
 var messageText;
 var emitter;
 var textAttributes;
+var firstRunLandscape;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
@@ -126,6 +127,7 @@ function create() {
     livesText.anchor.set(1, 0);
     
     // Ajusta el juego a la pantalla del dispositivo
+    firstRunLandscape = game.scale.isGameLandscape;
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
@@ -307,14 +309,22 @@ function removeText() {
 
 
 
-function handleIncorrect(){
-     	if(!game.device.desktop){
-     		document.getElementById("turn").style.display="block";
+function handleIncorrect() {
+     	if(!game.device.desktop) {
+     		document.getElementById("turn").style.display = "block";
      	}
 	}
 	
-	function handleCorrect(){
-		if(!game.device.desktop){
-			document.getElementById("turn").style.display="none";
+	function handleCorrect() {
+		if(!game.device.desktop) {
+            if(firstRunLandscape) {
+				gameRatio = window.innerWidth / window.innerHeight;		
+				game.width = Math.ceil(600 * gameRatio);
+				game.height = 600;
+				game.renderer.resize(game.width, game.height);
+				game.state.start("Play");		
+			}
+			
+            document.getElementById("turn").style.display="none";
 		}
 	}
