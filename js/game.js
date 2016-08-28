@@ -25,6 +25,7 @@ var bombTimer;
 var nappyInterval;
 var messageText;
 var emitter;
+var textAttributes;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
@@ -94,17 +95,19 @@ function create() {
         pacifiersCounter = i + 1;
     }
     
+    // Establece los atributos del texto
+    textAttributes = {font: '32px Marker Felt', fill: '#fff', align: 'center'};
+    
     // Crea e inicializa el marcador, el nivel y las vidas
     score = 0;
     level = 1;
     lives = 3;
-    levelText = game.add.text(16, 16, 'Nivel: ' + level, { font: '32px Marker Felt', fill: '#fff' });
+    levelText = game.add.text(16, 16, 'Nivel: ' + level, textAttributes);
     levelText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
-    scoreText = game.add.text(game.world.centerX, 16, 'Chupetes: ' + score, { font: '32px Marker Felt', fill: '#fff' });
+    scoreText = game.add.text(game.world.centerX, 16, 'Chupetes: ' + score, textAttributes);
     scoreText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
-    livesText = game.add.text(game.world.width - 15, 16, 'Vidas: ' + lives, { font: '32px Marker Felt', fill: '#fff' });
+    livesText = game.add.text(game.world.width - 15, 16, 'Vidas: ' + lives, textAttributes);
     livesText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
-    
     scoreText.anchor.set(0.5, 0);
     livesText.anchor.set(1, 0);
     
@@ -112,6 +115,19 @@ function create() {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
+
+     
+        
+
+        if (!game.device.desktop)
+        {
+            this.scale.forceOrientation(true, false);
+            this.scale.setResizeCallback(this.gameResized, this);
+            this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
+            this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
+        }
+    
+    
         
     // Crea el timer que controla las bombas y le asigna un intervalo inicial de 10 segundos
     nappyInterval = 10000;
@@ -261,7 +277,7 @@ function showMessage(message) {
     player.visible = false;
     
     // Muestra el mensaje en pantalla
-    messageText = game.add.text(game.world.centerX, game.world.centerY, message, { font: '32px Marker Felt', fill: '#fff', align: 'center', backgroundColor: '#000000'});
+    messageText = game.add.text(game.world.centerX, game.world.centerY, message, textAttributes);
     messageText.anchor.setTo(0.5, 0.5);
     messageText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
 
