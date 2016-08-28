@@ -5,10 +5,12 @@
 (4) Identificador del elemento DOM en el que se insertará el juego (por defecto es el body)
 (5) Objeto que contiene referencias a las funciones principales de Phaser */
 
-// Obtiene la proporción de la pantalla 
+/*// Obtiene la proporción de la pantalla 
 var gameRatio = window.innerWidth / window.innerHeight;
-var worldWidth = 640 * gameRatio; //Math.ceil(640 * gameRatio);
-var worldHeight = 640;
+var worldWidth = Math.ceil(640 * gameRatio);*/
+
+var worldWidth = 800;
+var worldHeight = 600;
 
 // Crea el objeto teniendo en cuenta la proporción
 var game = new Phaser.Game(worldWidth, worldHeight, Phaser.AUTO, '', {preload: preload, create: create, update: update});
@@ -173,7 +175,7 @@ function update() {
     if (level >= 3) {
         nappyTimer.start(); 
         
-        // showMessage('¡Evita los peligrosos pañales!'); <-- Verificar que el timer no está activo
+        showMessage('¡Evita los peligrosos pañales!');
     }
 }
    
