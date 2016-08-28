@@ -63,7 +63,6 @@ function create() {
     var ground = platforms.create(0, game.world.height - 64, 'ground');
     ground.width = worldWidth;
     ground.height *= 2; 
-    //ground.scale.set(1, 2);
     
     // Evita que pueda ser traspasado
     ground.body.immovable = true;
@@ -102,7 +101,7 @@ function create() {
     
     for (var i = 0; i < 12; i++)
     {
-        var pacifier = pacifiers.create(i * 70, 0, 'pacifier');
+        var pacifier = pacifiers.create(i * 80, 0, 'pacifier');
         pacifier.body.gravity.y = 6;
         pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
         
@@ -130,19 +129,12 @@ function create() {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL; // EXACT_FIT; SHOW_ALL
     game.scale.pageAlignHorizontally = true;
     game.scale.pageAlignVertically = true;
-
-     
-        
-
-        if (!game.device.desktop)
-        {
-            alert('Móvil');
-            game.scale.forcePortrait = true;
-        
-        }
+    // *********
+    game.scale.forceOrientation(false, true);
+    game.scale.enterIncorrectOrientation.add(handleIncorrect);
+    game.scale.leaveIncorrectOrientation.add(handleCorrect);
+    // *********
     
-    
-        
     // Crea el timer que controla las bombas y le asigna un intervalo inicial de 10 segundos
     nappyInterval = 10000;
     bombTimer = game.time.create(false);  
@@ -191,7 +183,7 @@ function update() {
     }   
     
     // A partir del tercer nivel deja caer bombas desde la parte superior
-    if (level >= 0) {
+    if (level >= 3) {
         bombTimer.start(); 
         // showMessage('¡Evita los peligrosos pañales!');
     }
@@ -311,3 +303,18 @@ function removeText() {
     game.paused = false;
 }
 
+
+
+
+
+function handleIncorrect(){
+     	if(!game.device.desktop){
+     		document.getElementById("turn").style.display="block";
+     	}
+	}
+	
+	function handleCorrect(){
+		if(!game.device.desktop){
+			document.getElementById("turn").style.display="none";
+		}
+	}
