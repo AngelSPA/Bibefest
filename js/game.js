@@ -102,7 +102,7 @@ function create() {
     
     for (var i = 0; i < 12; i++)
     {
-        var pacifier = pacifiers.create(i * 80, 0, 'pacifier');
+        var pacifier = pacifiers.create(i * 70, 0, 'pacifier');
         pacifier.body.gravity.y = 6;
         pacifier.body.bounce.y = 0.7 + Math.random() * 0.2;
         
@@ -319,8 +319,8 @@ function handleIncorrect() {
 		if(!game.device.desktop) {
             if(firstRunLandscape) {
 				gameRatio = window.innerWidth / window.innerHeight;		
-				game.width = Math.ceil(600 * gameRatio);
-				game.height = 600;
+				game.width = Math.ceil(640 * gameRatio);
+				game.height = 640;
 				game.renderer.resize(game.width, game.height);
 				game.state.start("Play");		
 			}
