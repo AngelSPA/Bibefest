@@ -297,5 +297,13 @@ function removeText() {
 function gameOver() {
     nappyTimer.stop();
     player.destroy();
-    showMessage('Fin del juego.');
+    showMessage('Fin del juego.\n\nToca para volver a jugar.');
+    
+    // Espera a que se haga clic sobre el mensaje para cerrarlo
+    game.input.onDown.addOnce(restartGame, this);
+}
+
+// Reinicia el juego
+function restartGame() {
+    create();
 }
