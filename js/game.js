@@ -1,4 +1,4 @@
-/* Crea el objeto Phaser.Game: // ORIGINAL var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });    
+/* Crea el objeto Phaser.Game:
 (1) Ancho 
 (2) Alto
 (3) Contexto de renderizado (recomendado AUTO, Phaser selecciona el adecuado)
@@ -34,6 +34,7 @@ var nappyInterval;
 var messageText;
 var emitter;
 var textAttributes;
+var usedMessage;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
@@ -121,9 +122,10 @@ function create() {
     // Crea el timer que genera los pañales y le asigna un intervalo inicial de 10 segundos
     nappyInterval = 10000;
     nappyTimer = game.time.create(false);  
-    nappyTimer.loop(nappyInterval, dropNappy, game); 
+    nappyTimer.loop(nappyInterval, dropNappy, this); 
     
      // Muestra el texto introductorio
+    usedMessage = false;
     showMessage('Ayuda a Pokitrón a conseguir chupetes.\n\nControles:  ←  ↑  → \n\nToca para cerrar.');   
         
     // Crea el primer nivel
@@ -171,11 +173,16 @@ function update() {
         player.body.velocity.y = -350;
     }   
     
-    // A partir del tercer nivel deja caer pañales desde la parte superior
-    if (level >= 3) {
+    // A partir del segundo nivel deja caer pañales desde la parte superior
+    if (level == 2) {
         nappyTimer.start(); 
         
-        showMessage('¡Evita los peligrosos pañales!');
+        // Evita que el mensaje se muestre indefinidamente
+        if(!usedMessage) {
+            showMessage('¡Evita los peligrosos pañales!\n\nToca para cerrar.');
+        }
+        
+        usedMessage = true;
     }
 }
    
@@ -257,13 +264,6 @@ function destroyEmitter() {
     emitter.destroy();
 }
 
-// Fin del juego
-function gameOver() {
-    nappyTimer.stop();
-    player.destroy();
-    showMessage('Fin del juego')
-}
-
 // Pausa el juego y muestra el mensaje en pantalla
 function showMessage(message) {
     // Detiene el juego
@@ -271,12 +271,12 @@ function showMessage(message) {
     
     // Oculta el jugador
     player.visible = false;
-    
+       
     // Muestra el mensaje en pantalla
     messageText = game.add.text(game.world.centerX, game.world.centerY, message, textAttributes);
     messageText.anchor.setTo(0.5, 0.5);
     messageText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 0);
-
+ 
     // Espera a que se haga clic sobre el mensaje para cerrarlo
     game.input.onDown.addOnce(removeText, this);
 }
@@ -291,4 +291,11 @@ function removeText() {
     
     // Activa el juego
     game.paused = false;
+}
+
+// Fin del juego
+function gameOver() {
+    nappyTimer.stop();
+    player.destroy();
+    showMessage('Fin del juego.');
 }
