@@ -9,6 +9,17 @@
 var gameRatio = window.innerWidth / window.innerHeight;
 var worldWidth = Math.ceil(640 * gameRatio);*/
 
+/* TODO:
+* ¿Eliminar el biberón pasado un tiempo
+* Enemigos
+* ¿Incrementar la dificultad?
+* ¿Lluvia de objetos para dificultar la visibilidad?
+* Sonido
+* Mejora del texto (Google Fonts)
+* Controles móviles
+* Pausa
+*/
+
 var worldWidth = 800;
 var worldHeight = 600;
 
