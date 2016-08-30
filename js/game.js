@@ -15,6 +15,11 @@ var worldHeight = 600;
 // Crea el objeto teniendo en cuenta la proporción
 var game = new Phaser.Game(worldWidth, worldHeight, Phaser.AUTO, '', {preload: preload, create: create, update: update});
 
+// Constantes
+const maxLives = 3;
+const tenSeconds = 10000;
+const oneMinute = 60000;
+
 // Variables globales
 var background;
 var platforms;
@@ -30,21 +35,25 @@ var lives;
 var livesText;
 var pacifiersCounter;
 var nappyTimer;
+var feedingBottleTimer;
 var nappyInterval;
+var feedingBottleInterval;
 var messageText;
 var emitter;
 var textAttributes;
 var usedMessage;
+var feedingBottle;
 
 // Carga los recursos necesarios, de este modo se evitan comportamientos extraños durante la ejecución
 function preload() {
-    game.load.image('sky', 'assets/sky.png');
-    game.load.image('ground', 'assets/platform.png');
-    game.load.image('pacifier', 'assets/pacifier.png');
-    game.load.image('nappy', 'assets/nappy.png', 28, 28);
-    game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
-    game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
-    game.load.spritesheet('explosion', 'assets/explosion.png', 24, 24);
+    game.load.image('sky', 'assets/images/sky.png');
+    game.load.image('ground', 'assets/images/platform.png');
+    game.load.image('pacifier', 'assets/images/pacifier.png');
+    game.load.image('nappy', 'assets/images/nappy.png', 28, 28);
+    game.load.image('feedingBottle', 'assets/images/feedingBottle.png');
+    game.load.spritesheet('dude', 'assets/images/dude.png', 32, 48);
+    game.load.spritesheet('baddie', 'assets/images/baddie.png', 32, 32);
+    game.load.spritesheet('explosion', 'assets/images/explosion.png', 24, 24);
 }
 
 // Crea los elementos del juego una vez finalizada la carga
@@ -120,14 +129,20 @@ function create() {
     game.scale.pageAlignVertically = true;
     
     // Crea el timer que genera los pañales y le asigna un intervalo inicial de 10 segundos
-    nappyInterval = 10000;
+    nappyInterval = tenSeconds;
     nappyTimer = game.time.create(false);  
     nappyTimer.loop(nappyInterval, dropNappy, this); 
     
+    // Crea el timer que genera los biberones y le asigna un intervalo inicial de 1 minuto
+    feedingBottleInterval = oneMinute;
+    feedingBottleTimer = game.time.create(false);  
+    feedingBottleTimer.loop(feedingBottleInterval, dropFeedingBottle, this); 
+    feedingBottleTimer.start();
+        
      // Muestra el texto introductorio
     usedMessage = false;
     showMessage('Ayuda a Pokitrón a conseguir chupetes.\n\nControles:  ←  ↑  → \n\nToca para cerrar.');   
-        
+            
     // Crea el primer nivel
     pacifiers = game.add.group();
     pacifiers.enableBody = true;
@@ -137,16 +152,20 @@ function create() {
 
 // Actualiza el estado del juego  
 function update() {
-    // Comprueba si hay colisión y evita que el jugador, los chupetes, los pañales y los enemigos atraviesen las plataformas
+    // Comprueba si hay colisiones
     game.physics.arcade.collide(player, platforms);
     game.physics.arcade.collide(pacifiers, platforms);
     game.physics.arcade.collide(nappy, platforms);
+    game.physics.arcade.collide(feedingBottle, platforms);    
     
-    // Comprueba si el jugador y un chupete se solapan, si es así llama a collectPacifier
+    // Comprueba si hay colisión entre el jugador y un chupete
     game.physics.arcade.overlap(player, pacifiers, collectPacifier, null, this);
     
-    // Comprueba si el jugador y un pañala se solapan
+    // Comprueba si hay colisión entre el jugador y un pañal
     game.physics.arcade.overlap(player, nappy, touchNappy, null, this);
+    
+    // Comprueba si hay colisión entre el jugador y un biberón
+    game.physics.arcade.overlap(player, feedingBottle, touchFeedingBottle, null, this);
     
     // Resetea la velocidad del jugador
     player.body.velocity.x = 0;
@@ -172,14 +191,14 @@ function update() {
     {
         player.body.velocity.y = -350;
     }   
-    
+        
     // A partir del segundo nivel deja caer pañales desde la parte superior
     if (level == 2) {
         nappyTimer.start(); 
         
         // Evita que el mensaje se muestre indefinidamente
         if(!usedMessage) {
-            showMessage('¡Evita los peligrosos pañales!\n\nToca para cerrar.');
+            showMessage('¡Evita los peligrosos pañales\ny recoge biberones para recuperar vidas!\n\nToca para cerrar.');
         }
         
         usedMessage = true;
@@ -217,6 +236,27 @@ function createNewLevel() {
         // Incrementa el contador de chupetes
         pacifiersCounter = i + 1;
     }
+}
+
+// Deja caer un biberón
+function dropFeedingBottle() {
+    if(lives < maxLives) {
+        // Genera un nuevo biberón
+        feedingBottle = game.add.sprite(Math.round(Math.random() * ((game.world.width - 20) - 0.5) + parseInt(0.5)), 0, 'feedingBottle');
+        game.physics.arcade.enable(feedingBottle);
+        feedingBottle.enableBody = true;
+        feedingBottle.body.gravity.y = 300;
+    }
+}
+
+// El jugador ha colisionado con un biberón 
+function touchFeedingBottle() {
+    // Elimina el biberon
+    feedingBottle.kill();
+    
+    // Incrementa una vida
+    lives++;
+    livesText.text = 'Vidas: ' + lives;
 }
 
 // Deja caer un pañal
@@ -296,6 +336,7 @@ function removeText() {
 // Fin del juego
 function gameOver() {
     nappyTimer.stop();
+    feedingBottleTimer.stop();
     player.destroy();
     showMessage('Fin del juego.\n\nToca para volver a jugar.');
     
